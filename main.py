@@ -6,7 +6,7 @@ import time
 import datetime
 import lib.models
 
-from lib.utils import redditjson, toUtc, splitsublist
+from lib.utils import redditjson, to_Utc, split_subreddit_list
 from lib.Transaction import Transaction
 from google.appengine.ext import db
 from google.appengine.api import memcache
@@ -15,7 +15,7 @@ from lib.cache import Cache
 template_dir = os.path.join(os.path.dirname(__file__), r'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape = True)
 SECRET = "PORNO"
-DEFAULTSUBS = ['aww',  'earthporn', 'wallpapers']
+DEFAULTSUBREDDITS = ['aww',  'earthporn', 'wallpapers']
 CACHE = Cache()
 
 def sanitizeString(s):
@@ -34,8 +34,6 @@ def CachedQuery(query, update=False):
         memcache.set(query,(result, t))
         return (result, t)
     
-## print redditjson("/r/gonewild")
-    
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
@@ -53,7 +51,7 @@ class Handler(webapp2.RequestHandler):
         if links == None:
             return False
         for link in links:
-            if link[3] > toUtc(lastupdate):
+            if link[3] > to_Utc(lastupdate):
                 tlink = link[0]
                 if link[0].find('i.imgur.com') != -1:
                     tlink = link[0][:-4] + 'l' + link[0][-4:]
@@ -62,7 +60,7 @@ class Handler(webapp2.RequestHandler):
         return True
         
 class HomeHandler(Handler):
-    def get(self, sublist):
+    def get(self, subreddit_list):
         limit = self.request.get('limit')
         timestamp = self.request.get('after')
         ASCDESC = self.request.get('ascdesc')
@@ -78,24 +76,24 @@ class HomeHandler(Handler):
         else:
             limit = 50
         timestamp = int(timestamp)
-        subs = []
-        if sublist != "/":
-            subs = splitsublist(sublist)
+        subreddits = []
+        if subreddit_list != "/":
+            subreddits = split_subreddit_list(subreddit_list)
         else:
             subcookie = self.request.cookies.get('sub_selection')
             if subcookie:
-                subs = splitsublist(subcookie)
+                subreddits = split_subreddit_list(subcookie)
             else:
-                subs = DEFAULTSUBS
+                subreddits = DEFAULTSUBREDDITS
 
-        query = Cache().cachedQuery('pics', subredditINININ = subs, dateSMALLER = timestamp, order = order, limit = limit)
+        query = Cache().cachedQuery('pics', subredditINININ = subreddits, dateSMALLER = timestamp, order = order, limit = limit)
         if len(query) > 0:
             lasttimestamp = (query[-1])['date']
             firsttimestamp = (query[0])['date']
         else:
             firsttimestamp = lasttimestamp = 300000000000000000
             
-        self.render("main.html", pics = query, lasttimestamp = lasttimestamp, firsttimestamp = firsttimestamp, url = sublist, mode = mode)
+        self.render("main.html", pics = query, lasttimestamp = lasttimestamp, firsttimestamp = firsttimestamp, url = subreddit_list, mode = mode)
         
     
             
@@ -141,7 +139,7 @@ class SubSelection(Handler):
     def get(self):
         selectcookie = self.request.cookies.get("sub_selection")
         if selectcookie:
-            selected = splitsublist(self.request.cookies.get("sub_selection"))
+            selected = split_subreddit_list(self.request.cookies.get("sub_selection"))
         else:
             selected = ""
         

@@ -8,9 +8,9 @@ import logging
 
 PICTUREEXTENSIONS = ['.jpg', '.png', '.gif']
 
-def splitsublist(sublist):
-    """splits string sublist into list with individual subs"""
-    return sublist.split('/')
+def split_subreddit_list(subreddit_string):
+    """splits string subreddit_string into list with individual subreddits"""
+    return subreddit_string.split('/')
 
 def getDataFromUrl(url):
     """Sets up a urlrequest and returns the data"""
@@ -25,15 +25,15 @@ def getDataFromUrl(url):
     return data
 
 
-def datetimetotimestamp(dt):
+def datetime_to_timestamp(dt):
     return calendar.timegm(dt.utctimetuple())
 
 
-def toUtc(dt):
-    return datetimetotimestamp(dt
+def to_Utc(dt):
+    return datetime_to_timestamp(dt
 )
 
-def jsontodict(page):
+def json_to_dict(page):
     res = json.load(page)
     return res
 
@@ -44,7 +44,7 @@ def extractlinks(listings):
             yield child
             
 def linkurl(listing):
-    """Returns a tuple (url,name, title, timestamp created) of a Reddit link"""
+    """Returns a tuple (url,name, title, timestamp_created) of a Reddit JSON link"""
     return (listing["data"]["url"], listing["data"]["name"], listing["data"]["title"], int(listing["data"]["created_utc"]))
       
 def redditjson(suburl):
@@ -54,7 +54,7 @@ def redditjson(suburl):
     if page == None:
         return None
     try:
-        pagedict= jsontodict(page)
+        pagedict= json_to_dict(page)
     except ValueError:
         return None
     return [s for s in linkgen(pagedict)]
