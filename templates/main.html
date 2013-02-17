@@ -12,7 +12,7 @@
 <script type="text/javascript">
 var thumbassets = [{% for link in pics %} "{{link.tlink}}",{%endfor%}];
 var linkassets = [{%for link in pics%} "{{link.url}}",{%endfor%}];
-var titleassets = [{%for link in pics%} "{{link.title}}",{%endfor%}];
+var titleassets = [{%for link in pics%} "{{link.title|sanitizeString}}",{%endfor%}];
 var permalinkassets = [{%for link in pics%} "{{link.permalink[3:]}}",{%endfor%}];
 var columns = [0,0,0,0];
 var maxwidth = 200;

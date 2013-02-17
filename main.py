@@ -18,6 +18,11 @@ SECRET = "PORNO"
 DEFAULTSUBS = ['aww',  'earthporn', 'wallpapers']
 CACHE = Cache()
 
+def sanitizeString(s):
+    return s.replace('\n', ' ')
+
+jinja_env.filters['sanitizeString'] = sanitizeString
+
 def CachedQuery(query, update=False):
     """Takes Query as string and returns a tuple(result, time_when_Cached) from Cache or DB """
     result = memcache.get(query)
@@ -99,7 +104,7 @@ class HomeHandler(Handler):
 class Addlinks(Handler):
     def get(self):
         query, _ = CachedQuery("SELECT * FROM SubReddits ORDER BY lastupdate ASC LIMIT 5")
-        for q in query.run(limit=5):
+        for q in query:
             if datetime.datetime.now() - q.lastupdate > datetime.timedelta(minutes=10):
                 if self.updateSub(q.name, q.lastupdate):
                     q.lastupdate = datetime.datetime.now()

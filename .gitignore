@@ -6,3 +6,9 @@
 *.csproj
 *.unityproj
 *.sln
+*.pydevproject
+*.project
+*.bak
+
+#compiled python
+*.pyc
