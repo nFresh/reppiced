@@ -1,0 +1,12 @@
+<!Doctype HTML>
+<html>
+<body>
+<form method="post">
+{% for s in subquery %}
+<input type="checkbox" name="subs" value="{{s.name}}" {% if s.name in selected %} checked="checked" {% endif %}]> {{s.name}} {% if s.nsfw %} (nsfw) {% endif %} <br>
+{% endfor %}
+<input type="Submit">
+</form>
+
+</body>
+</html>

@@ -1,0 +1,104 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/static/main.css" />
+</head>
+<body>
+<div class="head"><a href="/_choosesubs"> Select Subreddits to Show</a><br></div>
+	<div id="thumbs">
+	</div>
+<br>
+<a id="back" href="{{url}}?after={{lasttimestamp}}&ascdesc=ASC">Back</a> <a id="more" href="{{url}}?after={{lasttimestamp}}&ascdesc=DESC">More</a>
+</body>
+<script type="text/javascript">
+var thumbassets = [{% for link in pics %} "{{link.tlink}}",{%endfor%}];
+var linkassets = [{%for link in pics%} "{{link.url}}",{%endfor%}];
+var titleassets = [{%for link in pics%} "{{link.title}}",{%endfor%}];
+var permalinkassets = [{%for link in pics%} "{{link.permalink[3:]}}",{%endfor%}];
+var columns = [0,0,0,0];
+var maxwidth = 200;
+var maxheight = 400;
+var images = [];
+var div = document.getElementById('thumbs');
+
+
+var findLowest = function(ar){
+    
+    low = ar[0];
+    lowi = 0;
+    for (j = 0; j < ar.length; j++){
+        if (ar[j] < low){
+            low = ar[j];
+            lowi = j;
+        
+        };
+    };
+    return lowi;
+    
+};
+var findBiggest = function(ar){
+    big = ar[0];
+    bigi = 0;
+    for (j = 0; j < ar.length; j++){
+        if (ar[j]> big){
+            big = ar[j];
+            bigi = j;
+        };
+    };
+    return big;
+}
+var onImageLoad = function(){
+    width = this.width;
+    height = this.height;
+    if (width > maxwidth){
+        ratio = width / height;
+        height = maxwidth / ratio;
+        this.style.width = maxwidth;
+        this.style.height = height;   
+    }
+    if (height > maxheight){
+        ratio = height / width;
+        width = maxheight / ratio;
+        this.style.width = width;
+        this.style.height = maxheight;
+        height = maxheight
+    }
+    i = this.name;
+    imgdiv = document.createElement('div');
+    imgdiv.className = 'thumb';
+    a = document.createElement('a');
+    a.href = linkassets[i];
+    lowest = findLowest(columns);
+    imgdiv.style.position ="absolute"; imgdiv.style.left = lowest*210; imgdiv.style.top = columns[lowest]
+    columns[lowest] += height + 10;
+    a.appendChild(this);
+    imgdiv.appendChild(a);
+    span = document.createElement('span');
+    span.className = 'text';
+    acom = document.createElement('a');
+    acom.href = "http://www.reddit.com/comments/".concat(permalinkassets[i]);
+    acom.innerHTML = titleassets[i];
+    span.appendChild(acom);
+    imgdiv.appendChild(span);
+    div.appendChild(imgdiv);
+    biggest = findBiggest(columns);
+    document.getElementById('back').style.top = biggest + 50;
+    document.getElementById('more').style.top = biggest + 50;
+};
+
+
+
+
+for (i= 0; i < thumbassets.length;i++){
+    images[i] = new Image;
+    images[i].onload = onImageLoad;
+    images[i].name = i
+    images[i].src = thumbassets[i];
+};
+
+
+
+
+
+
+</script>
+</html>

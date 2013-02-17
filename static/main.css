@@ -1,0 +1,49 @@
+body {
+	position: relative;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 14px;
+
+    width: 800px;
+    margin: 0 auto;
+    padding: 10px;
+    color: #333;
+    background-color: #FFFFFF;
+}
+.head{
+	width:800px;
+	height: 50px;
+}
+#thumbs{
+	width:800px;
+	position: relative;
+}
+#back{
+	position: absolute;
+	left: 300;
+}
+#more{
+	position: absolute;
+	left: 400;
+}
+.text {
+    display: none;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background: #999;
+    background: rgba(0,0,0,0.3);
+    text-align: center
+}
+
+.thumb:hover .text {
+    display: block
+}
+.text a {
+	color: #DD1111;
+	text-decoration: none;
+	font-weight: bold;
+}
+.text a:VISITED {
+	color: #DD1111;
+}

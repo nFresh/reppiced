@@ -1,0 +1,4 @@
+cron:
+- description: Refresh All subreddits
+  url: /_addlinks
+  schedule: every 20 minutes
