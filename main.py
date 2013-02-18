@@ -50,13 +50,15 @@ class Handler(webapp2.RequestHandler):
         links = redditjson("/r/"+subname)
         if links == None:
             return False
+        
         for link in links:
             if link[3] > to_Utc(lastupdate):
-                tlink = link[0]
                 if link[0].find('i.imgur.com') != -1:
                     tlink = link[0][:-4] + 'l' + link[0][-4:]
+                else:
+                    tlink = link[0]
+               
                 Transaction('pics').set( url = link[0], subreddit = subname, permalink = link[1], date = link[3], tlink = tlink, title = link[2])
-        CACHE.cachedQuery('pics', _update = True)
         return True
         
 class HomeHandler(Handler):
@@ -64,19 +66,24 @@ class HomeHandler(Handler):
         limit = self.request.get('limit')
         timestamp = self.request.get('after')
         ASCDESC = self.request.get('ascdesc')
-        mode = "nothumb" if self.request.get('mode') == "" else self.request.get('mode')
+        
         if timestamp == "":
             timestamp = 300000000000000000
+        timestamp = int(timestamp)
+
         if ASCDESC == "" or "DESC":
             order = "-date"
         else:
             order = "date"
+       
         if limit:
             limit = int(limit)
         else:
             limit = 50
-        timestamp = int(timestamp)
+       
+        
         subreddits = []
+       
         if subreddit_list != "/":
             subreddits = split_subreddit_list(subreddit_list)
         else:
@@ -85,15 +92,15 @@ class HomeHandler(Handler):
                 subreddits = split_subreddit_list(subcookie)
             else:
                 subreddits = DEFAULTSUBREDDITS
-
+        
         query = Cache().cachedQuery('pics', subredditINININ = subreddits, dateSMALLER = timestamp, order = order, limit = limit)
         if len(query) > 0:
             lasttimestamp = (query[-1])['date']
             firsttimestamp = (query[0])['date']
         else:
-            firsttimestamp = lasttimestamp = 300000000000000000
-            
-        self.render("main.html", pics = query, lasttimestamp = lasttimestamp, firsttimestamp = firsttimestamp, url = subreddit_list, mode = mode)
+            firsttimestamp = lasttimestamp = 300000000000000000            
+        
+        self.render("main.html", pics = query, lasttimestamp = lasttimestamp, firsttimestamp = firsttimestamp, url = subreddit_list)
         
     
             
@@ -103,7 +110,7 @@ class Addlinks(Handler):
     def get(self):
         query, _ = CachedQuery("SELECT * FROM SubReddits ORDER BY lastupdate ASC LIMIT 5")
         for q in query:
-            if datetime.datetime.now() - q.lastupdate > datetime.timedelta(minutes=10):
+             if datetime.datetime.now() - q.lastupdate > datetime.timedelta(minutes=10):
                 if self.updateSub(q.name, q.lastupdate):
                     q.lastupdate = datetime.datetime.now()
                     q.put()
@@ -113,14 +120,6 @@ class Addlinks(Handler):
                 return
     
     
-
-#class PictureHandler(Handler):
-#    def get(self, pic_id):
-#        im = db.get(db.Key.from_path('picture', pic_id[1:])).picture
-#        self.response.headers['Content-Type'] = 'image/jpeg'     ## TODO, other image types
-#        self.response.out.write(im)
-#        return
-#    
 class Addsub(Handler):
     def get(self):
         self.render("newsub.html")
@@ -129,10 +128,11 @@ class Addsub(Handler):
         subname = self.request.get("subname")
         nsfw = self.request.get("nsfw") == "on"
         query, _ = CachedQuery("SELECT * FROM SubReddits WHERE name='"+subname+"'")
+        
         if not query.fetch(1):
-            newsubreddit = Transaction('SubReddits').set(key_name = subname, name= subname, nsfw = nsfw)
-            self.updateSub(subname, datetime.datetime(2010, 12, 31, 23, 59, 59))
-            
+            Transaction('SubReddits').set(key_name = subname, name= subname, nsfw = nsfw)
+            self.updateSub(subname, datetime.datetime(2010, 12, 31, 23, 59, 59))  
+
         self.redirect("/_addsub")
         
 class SubSelection(Handler):
@@ -148,12 +148,14 @@ class SubSelection(Handler):
     
     def post(self):
         subs = self.request.get_all('subs')
-        cookiestring = ""
-        for s in subs:
-            cookiestring = cookiestring +"/" +  s 
         dt = datetime.datetime.now()
         dt = dt + datetime.timedelta(days = 30)
         expires = dt.strftime("%a, %d-%b-%Y %H:%M:%S GMT")
+        
+        cookiestring = ""
+        for s in subs:
+            cookiestring = cookiestring +"/" +  s 
+        
         self.response.headers.add_header('Set-Cookie', str('sub_selection='+cookiestring+";Path=/;expires="+expires))
         self.redirect("/")
         
